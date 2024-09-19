@@ -2,17 +2,26 @@
   <body>
     <script>
       const clearAllCookies = () => {
-        console.log("Clearing all cookies");
         const cookies = document.cookie.split(";");
 
         for (let i = 0; i < cookies.length; i++) {
-          console.log("Clearing cookie: ", cookies[i]);
           const cookie = cookies[i];
           const eqPos = cookie.indexOf("=");
-          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-          document.cookie =
-            name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+          const name =
+            eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+
+          // Delete cookies for the current path
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+
+          // Delete cookies for all possible subdomain paths
+          const domainParts = window.location.hostname.split(".");
+          while (domainParts.length > 0) {
+            const domain = domainParts.join(".");
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${domain}`;
+            domainParts.shift();
+          }
         }
+        console.log("All cookies for the current domain have been cleared.");
       };
 
       const callDerivWS = async (hostname, params, token) => {
